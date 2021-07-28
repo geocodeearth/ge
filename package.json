@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/geocodeearth/batch.git"
+    "url": "git+https://github.com/geocodeearth/ge.git"
   },
   "keywords": [
     "Geocode",
@@ -25,9 +25,9 @@
   "author": "geocodeearth",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/geocodeearth/batch/issues"
+    "url": "https://github.com/geocodeearth/ge/issues"
   },
-  "homepage": "https://github.com/geocodeearth/batch#readme",
+  "homepage": "https://github.com/geocodeearth/ge#readme",
   "dependencies": {
     "axios": "^0.21.1",
     "csv-parse": "^4.16.0",
