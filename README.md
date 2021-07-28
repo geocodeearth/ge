@@ -22,7 +22,10 @@ Options:
 
 ## Authentication
 
-In order to authenticate with the Geocode Earth server you must `export` your API KEY in your shell so it is available as an environment variable:
+In order to authenticate with the Geocode Earth servers you must have a valid API key from Geocode Earth.
+You can sign up for a free key at https://geocode.earth/ or visit https://app.geocode.earth/dashboard to find an existing key.
+
+You must `export` your API key in your shell so it is available as an environment variable:
 
 ```bash
 export GE_API_KEY=ge-xxxxxxxxxxxxxxxx
@@ -84,7 +87,7 @@ ge batch csv \
 ##### Debugging
 
 You can increase the verbosity for debugging purposes.
-Logs are written to `stdout`:
+Logs are written to `stderr`:
 
 ```bash
 ge batch csv \
@@ -94,11 +97,11 @@ ge batch csv \
 ##### Parameter templating
 
 The basic usage is `ge batch csv <file>`, but this alone will not yeild results.
-You'll first need to define a mapping from the field names in your CSV file map to HTTP request parameters which are sent to Geocode Earth.
+You'll first need to define a mapping from the field names in your CSV to HTTP request parameters which will be sent to Geocode Earth.
 
-This can be achieved with a pair of flags, `-p` to name the parameter and `-t` to define a template for the parameter value.
+This can be achieved using a pair of flags, `-p` to name the parameter and `-t` to define a template for the parameter value.
 
-For example the following will set the querystring parameter `text` to equal `1 Main Street, London` provided that the CSV contains columns named `number`, `street` and `city`:
+For example the following will set the querystring parameter `text` to equal `1 Main Street, London`, assuming that the CSV contains columns named `number`, `street` and `city`:
 
 ```bash
 ge batch csv \
