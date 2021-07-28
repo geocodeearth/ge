@@ -34,7 +34,7 @@ jobs:
           node-version: 14.x
       - name: Run semantic-release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_SEMANTIC_RELEASE_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: >
           if [[ -n "$GH_TOKEN" && -n "$NPM_TOKEN" ]]; then
