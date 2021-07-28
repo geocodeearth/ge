@@ -52,5 +52,8 @@
   "release": {
     "branch": "master",
     "success": []
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
