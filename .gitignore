@@ -1,0 +1,8 @@
+node_modules
+package-lock.json
+*.bz2
+*.gz
+*.db
+*.tar
+*.geojson
+*.csv

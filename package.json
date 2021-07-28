@@ -1,0 +1,56 @@
+{
+  "name": "@geocodeearth/ge",
+  "version": "0.0.0-development",
+  "description": "Geocode Earth command-line tools",
+  "main": "index.js",
+  "bin": {
+    "ge": "./bin/ge.js"
+  },
+  "scripts": {
+    "test": "./bin/test unit",
+    "format_check": "./node_modules/standard/bin/cmd.js",
+    "format_fix": "./node_modules/standard/bin/cmd.js --fix",
+    "validate": "npm ls"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geocodeearth/batch.git"
+  },
+  "keywords": [
+    "Geocode",
+    "Earth",
+    "batch",
+    "geocoding"
+  ],
+  "author": "geocodeearth",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/geocodeearth/batch/issues"
+  },
+  "homepage": "https://github.com/geocodeearth/batch#readme",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "csv-parse": "^4.16.0",
+    "csv-stringify": "^5.6.2",
+    "lodash": "^4.17.21",
+    "pretty-error": "^3.0.4",
+    "through2-parallel": "^0.1.3",
+    "yargs": "^17.0.1"
+  },
+  "devDependencies": {
+    "glob": "^7.1.7",
+    "precommit-hook": "^3.0.0",
+    "standard": "^16.0.3",
+    "tap-spec": "^5.0.0",
+    "tape": "^5.3.0"
+  },
+  "pre-commit": [
+    "format_check",
+    "validate",
+    "test"
+  ],
+  "release": {
+    "branch": "master",
+    "success": []
+  }
+}
