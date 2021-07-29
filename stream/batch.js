@@ -1,58 +1,49 @@
 const _ = require('lodash')
-const parallel = require('through2-parallel').obj
+const parallel = require('through2-parallel')
 const fields = require('./csv_fields')
-const client = require('../src/client')()
+const client = require('../src/client')
 
 // Perform geocoding requests, map response JSON to CSV
 const streamFactory = (options) => {
-  options = _.defaults(options, {
-    verbose: false,
-    endpoint: '/v1/search',
-    concurrency: 5,
-    templates: []
-  })
+  const http = client()
+  const streamOptions = _.pick(options, 'concurrency')
 
-  return parallel({ concurrency: options.concurrency }, (row, enc, next) => {
-    // https://geocode.earth/docs/forward/search/
-    // https://geocode.earth/docs/forward/customization/
-    const reqOptions = {}
+  return parallel.obj(streamOptions, (row, enc, next) => {
+    // ensure every row contains all columns (even if they are empty)
+    _.assign(row, _.zipObject(_.keys(fields)))
 
-    _.each(options.templates, (fn) => {
-      fn(reqOptions, row)
-    })
+    // the http request options (params, headers, etc)
+    const req = { params: {} }
 
-    if (_.isEmpty(reqOptions)) {
+    // call each template function to populate request object
+    _.each(options.templates, (fn) => fn(req, row))
+
+    // skip rows which produces no query params
+    // https://github.com/axios/axios#request-config
+    if (_.isEmpty(req.params)) {
       console.error('skipping request, no parameters')
-      process.exit(1)
+      return next(null, row)
     }
 
-    if (options.verbose) {
-      console.error(options.endpoint, reqOptions)
-    }
+    // verbose logging
+    if (options.verbose) { console.error(options.endpoint, req) }
 
-    client.get(options.endpoint, reqOptions).then(res => {
-      // ensure every row contains all columns (even if they are empty)
-      _.assign(row, _.zipObject(_.keys(fields)))
+    // send http request
+    http
+      .get(options.endpoint, req)
+      .then(res => {
+        // use the first feature returned
+        const feature = _.get(res, 'data.features[0]')
+        if (feature) {
+          // copy target fields to CSV row
+          _.each(fields, (jpath, column) => row[column] = _.get(feature, jpath))
+        }
 
-      // use the first feature
-      const feature = _.get(res, 'data.features[0]')
-      if (feature) {
-        // append target fields to CSV row
-        _.each(fields, (jpath, column) => {
-          row[column] = _.get(feature, jpath)
-
-          // JSON encode non-scalar properties
-          // if (!_.isEmpty(row[column]) || _.isString(row[column]) || _.isNumber(row[column])) {
-          //   row[column] = JSON.stringify(row[column])
-          // }
-        })
-      }
-
-      // add a delay to avoid '429 Too Many Requests' rate-limit errors
-      _.delay(next, 1000, null, row)
-    })
+        // add a delay to avoid '429 Too Many Requests' rate-limit errors
+        _.delay(next, 1000, null, row)
+      })
       .catch(error => {
-      // display the HTTP response where available
+        // display the HTTP response where available
         if (_.has(error, 'response.data')) {
           console.error(error.response.data)
           process.exit(1)
