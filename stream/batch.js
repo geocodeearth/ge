@@ -8,7 +8,20 @@ const streamFactory = (options) => {
   const http = client()
   const streamOptions = _.pick(options, 'concurrency')
 
-  return parallel.obj(streamOptions, (row, enc, next) => {
+  // auto-discover plan limits and raise concurrency accordingly
+  const discovery = _.once((res, stream) => {
+    const qps = _.toNumber(_.get(res.headers, 'x-ratelimit-limit-second'))
+    if (_.isNumber(qps)) {
+      if (options.verbose) { console.error(`discovered QPS: ${qps}`) }
+      if (qps > stream.concurrency) {
+        if (options.verbose) { console.error(`updating concurrency: ${qps}`) }
+        stream.concurrency = qps
+      }
+    }
+  })
+
+  const stream = parallel.obj(streamOptions, (row, enc, next) => {
+
     // ensure every row contains all columns (even if they are empty)
     _.assign(row, _.zipObject(_.keys(fields)))
 
@@ -32,6 +45,10 @@ const streamFactory = (options) => {
     http
       .get(options.endpoint, req)
       .then(res => {
+
+        // auto-discover plan limits and raise concurrency accordingly
+        if (options.discovery) { discovery(res, stream) }
+
         // use the first feature returned
         const feature = _.get(res, 'data.features[0]')
         if (feature) {
@@ -52,6 +69,8 @@ const streamFactory = (options) => {
         next(error)
       })
   })
+
+  return stream
 }
 
 module.exports.geocoder = streamFactory

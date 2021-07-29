@@ -31,7 +31,7 @@ You must `export` your API key in your shell so it is available as an environmen
 export GE_API_KEY=ge-xxxxxxxxxxxxxxxx
 ```
 
-You can check that this can been set correctly with the `env` command in your shell.
+You can check that it's been set correctly with the `env` command.
 
 #### Batch CSV Geocoding
 
@@ -72,16 +72,6 @@ and capture the updated CSV on `stdout` as such:
 
 ```bash
 cat input.csv | ge batch csv /dev/stdin | xsv table
-```
-
-##### Configuring your rate limits
-
-Trial users have a rate-limit of 5 queries-per-second (which is the default).
-If you have a paid plan then you can raise the concurrency:
-
-```bash
-ge batch csv \
-  --concurrency 20
 ```
 
 ##### Debugging
