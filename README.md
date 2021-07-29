@@ -110,7 +110,6 @@ note: be careful to use single-quotes `'` instead of double-quotes `"` on the co
 ```batch
 ge batch csv \
   --endpoint '/v1/search' \
-  --concurrency 20 \
   -p 'text' -t '${row.NUMBER} ${row.STREET}, ${row.CITY}' \
   -p 'boundary.country' -t 'NZ' \
   /data/oa/nz/countrywide.csv
@@ -121,7 +120,6 @@ ge batch csv \
 ```batch
 ge batch csv \
   --endpoint '/v1/search/structured' \
-  --concurrency 20 \
   -p 'address' -t '${row.NUMBER} ${row.STREET}' \
   -p 'city' -t '${row.CITY}' \
   -p 'boundary.country' -t 'NZ' \
@@ -133,7 +131,6 @@ ge batch csv \
 ```batch
 ge batch csv \
   --endpoint '/v1/reverse' \
-  --concurrency 20 \
   -p 'point.lat' -t '${row.LAT}' \
   -p 'point.lon' -t '${row.LON}' \
   /data/oa/nz/countrywide.csv
@@ -144,7 +141,6 @@ ge batch csv \
 ```batch
 ge batch csv \
   --endpoint '/v1/autocomplete' \
-  --concurrency 20 \
   -p 'text' -t '${row.NUMBER} ${row.STREET}, ${row.CITY}' \
   -p 'focus.point.lat' -t '${row.LAT}' \
   -p 'focus.point.lon' -t '${row.LON}' \
