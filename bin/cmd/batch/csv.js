@@ -38,19 +38,10 @@ module.exports = {
     })
   },
   handler: (argv) => {
-    const mappings = _.zipObject(_.castArray(argv.param), _.castArray(argv.template))
-    const templates = _.map(mappings, (template, param) => {
-      const render = _.template(template)
-      return (req, row) => {
-        if (!_.isPlainObject(req.params)) { req.params = {} }
-        req.params[param] = render({ row })
-      }
-    })
-
     fs.createReadStream(argv.file)
       .pipe(stream.csv.parser())
       .pipe(stream.batch.geocoder({
-        templates,
+        templates: generateTemplates(argv),
         endpoint: argv.endpoint,
         concurrency: argv.concurrency,
         verbose: argv.verbose
@@ -58,4 +49,33 @@ module.exports = {
       .pipe(stream.csv.stringifier())
       .pipe(process.stdout)
   }
+}
+
+function generateTemplates (argv) {
+  // report error if user failed to specify any valid pairs
+  if (_.isEmpty(argv.param) || _.isEmpty(argv.template)) {
+    throw new Error('error: you must specify at least one pair of -p (param) and -t (template) flags.')
+  }
+
+  // cast scalar (single flag specified) values to arrays
+  const p = _.castArray(argv.param)
+  const t = _.castArray(argv.template)
+
+  // report error if pairs are unbalanced
+  if (_.size(p) !== _.size(t)) {
+    throw new Error('error: you pair every -p (param) flag with a -t (template) flag.')
+  }
+
+  const mappings = _.zipObject(p, t)
+  if (argv.verbose) { console.error('param templates', mappings) }
+
+  const templates = _.map(mappings, (template, param) => {
+    // compile template
+    const render = _.template(template)
+
+    // return req param template function
+    return (req, row) => req.params[param] = render({ row })
+  })
+
+  return templates
 }

@@ -16,13 +16,9 @@ const uncaughtExceptionMiddleware = (argv) => {
       return
     }
 
-    // Set error code
-    process.exitCode = 1
-
     // Print a pretty error message
     console.error(new PrettyError().render(err))
-
-    // Allow the program to exit naturally..
+    process.exit(1)
   })
 }
 
