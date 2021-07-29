@@ -34,7 +34,12 @@ module.exports = {
     yargs.option('concurrency', {
       type: 'number',
       default: 5,
-      describe: 'Maximim queries per-second.'
+      describe: 'Maximum queries per-second.'
+    })
+    yargs.option('discovery', {
+      type: 'boolean',
+      default: true,
+      describe: 'Maximum concurrency will be applied based on your plan limits.'
     })
   },
   handler: (argv) => {
@@ -44,6 +49,7 @@ module.exports = {
         templates: generateTemplates(argv),
         endpoint: argv.endpoint,
         concurrency: argv.concurrency,
+        discovery: argv.discovery,
         verbose: argv.verbose
       }))
       .pipe(stream.csv.stringifier())
