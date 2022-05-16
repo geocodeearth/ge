@@ -21,7 +21,6 @@ const streamFactory = (options) => {
   })
 
   const stream = parallel.obj(streamOptions, (row, enc, next) => {
-
     // ensure every row contains all columns (even if they are empty)
     _.assign(row, _.zipObject(_.keys(fields)))
 
@@ -45,7 +44,6 @@ const streamFactory = (options) => {
     http
       .get(options.endpoint, req)
       .then(res => {
-
         // auto-discover plan limits and raise concurrency accordingly
         if (options.discovery) { discovery(res, stream) }
 
@@ -53,7 +51,7 @@ const streamFactory = (options) => {
         const feature = _.get(res, 'data.features[0]')
         if (feature) {
           // copy target fields to CSV row
-          _.each(fields, (jpath, column) => row[column] = _.get(feature, jpath))
+          _.each(fields, (jpath, column) => { row[column] = _.get(feature, jpath) })
         }
 
         // add a delay to avoid '429 Too Many Requests' rate-limit errors

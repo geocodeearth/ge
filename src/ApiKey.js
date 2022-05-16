@@ -12,7 +12,7 @@ class ApiKey {
     return this.key
   }
 
-  static validate(value) {
+  static validate (value) {
     if (!_.isString(value) || !PATTERN.test(value)) {
       throw new Error(`invalid api_key, you must set the environment variable: ${ENV_VAR}`)
     }

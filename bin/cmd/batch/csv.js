@@ -80,7 +80,7 @@ function generateTemplates (argv) {
     const render = _.template(template)
 
     // return req param template function
-    return (req, row) => req.params[param] = render({ row })
+    return (req, row) => { req.params[param] = render({ row }) }
   })
 
   return templates
