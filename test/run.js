@@ -8,7 +8,7 @@ const suite = process.argv[2] || ['unit']
 const files = glob.sync('**/*.test.js', { realpath: true })
 
 // unit and functional test predecates
-const unit = (f) => !/\/test\//.test(f)
+const unit = (f) => !/\/test\//.test(f) && !/\/node_modules\//.test(f)
 // const func = (f) => /\/test\//.test(f)
 
 // test runner
