@@ -1,12 +1,13 @@
 const _ = require('lodash')
 const parallel = require('through2-parallel')
-const fields = require('./csv_fields')
+const baseFields = require('./csv_fields')
 const client = require('../src/client')
 
 // Perform geocoding requests, map response JSON to CSV
 const streamFactory = (options) => {
   const http = client()
   const streamOptions = _.pick(options, 'concurrency')
+  const extraFields = _.get(options, 'fields')
 
   // auto-discover plan limits and raise concurrency accordingly
   const discovery = _.once((res, stream) => {
@@ -21,6 +22,9 @@ const streamFactory = (options) => {
   })
 
   const stream = parallel.obj(streamOptions, (row, enc, next) => {
+    // merge base fields with any user-specified fields
+    const fields = _.assign({}, baseFields, extraFields)
+
     // ensure every row contains all columns (even if they are empty)
     _.assign(row, _.zipObject(_.keys(fields)))
 

@@ -26,6 +26,16 @@ module.exports = {
       type: 'string',
       describe: 'Define a template.'
     })
+    yargs.option('column', {
+      alias: 'c',
+      type: 'string',
+      describe: 'Define a new column.'
+    })
+    yargs.option('selector', {
+      alias: 's',
+      type: 'string',
+      describe: 'Define _.get() selector path.'
+    })
     yargs.option('endpoint', {
       type: 'string',
       default: '/v1/search',
@@ -47,6 +57,7 @@ module.exports = {
       .pipe(stream.csv.parser())
       .pipe(stream.batch.geocoder({
         templates: generateTemplates(argv),
+        fields: generateFields(argv),
         endpoint: argv.endpoint,
         concurrency: argv.concurrency,
         discovery: argv.discovery,
@@ -84,4 +95,17 @@ function generateTemplates (argv) {
   })
 
   return templates
+}
+
+function generateFields (argv) {
+  // cast scalar (single flag specified) values to arrays
+  const c = _.castArray(argv.column)
+  const s = _.castArray(argv.selector)
+
+  // report error if pairs are unbalanced
+  if (_.size(c) !== _.size(s)) {
+    throw new Error('error: you pair every -c (column) flag with a -s (selector) flag.')
+  }
+
+  return _.zipObject(c, s)
 }
