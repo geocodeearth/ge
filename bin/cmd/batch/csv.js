@@ -105,8 +105,8 @@ function generateTemplates (argv) {
 
 function generateFields (argv) {
   // cast scalar (single flag specified) values to arrays
-  const c = _.castArray(argv.column)
-  const s = _.castArray(argv.selector)
+  const c = _.filter(_.castArray(argv.column), _.size)
+  const s = _.filter(_.castArray(argv.selector), _.size)
 
   // report error if pairs are unbalanced
   if (_.size(c) !== _.size(s)) {
