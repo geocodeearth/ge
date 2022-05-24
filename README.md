@@ -80,8 +80,7 @@ You can increase the verbosity for debugging purposes.
 Logs are written to `stderr`:
 
 ```bash
-ge batch csv \
-  --verbose
+ge batch csv --verbose
 ```
 
 ##### Parameter templating
@@ -104,6 +103,22 @@ We use the [lodash template engine](https://lodash.com/docs/4.17.15#template) an
 You can add multiple pairs of parameters, please take care to match each `-p` with a `-t`.
 
 note: be careful to use single-quotes `'` instead of double-quotes `"` on the command-line to avoid your shell interpolating the string.
+
+##### Additional response columns
+
+We append the most commonly requested columns to the output CSV file by default, this is sufficient for most use-cases. In some situations you may wish to extract additional data from the API results and store it in a new CSV column.
+
+This can be achieved using a pair of flags, `-c` to name the new column and `-s` to define an object selection path which is passed to [lodash _.get()](https://lodash.com/docs/4.17.15#get).
+
+For example the following will add a new column named `wikipedia` filled with values from the `"wk:page"` key in the `properties.addendum.concordances` object of API responses:
+
+```bash
+ge batch csv \
+  -c 'ge:wikipedia' \
+  -s 'properties.addendum.concordances["wk:page"]'
+```
+
+Note: if `_.get()` yeilds and empty value, the new column will be empty. If the value isn't scalar (ie. an `Array` or `Object`) then the column will contain a JSON encoded version of the value.
 
 ##### Search Example
 
