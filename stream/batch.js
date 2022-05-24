@@ -9,6 +9,9 @@ const streamFactory = (options) => {
   const streamOptions = _.pick(options, 'concurrency')
   const extraFields = _.get(options, 'fields')
 
+  // merge base fields with any user-specified fields
+  const fields = _.assign({}, baseFields, extraFields)
+
   // auto-discover plan limits and raise concurrency accordingly
   const discovery = _.once((res, stream) => {
     const qps = _.toNumber(_.get(res.headers, 'x-ratelimit-limit-second'))
@@ -22,11 +25,18 @@ const streamFactory = (options) => {
   })
 
   const stream = parallel.obj(streamOptions, (row, enc, next) => {
-    // merge base fields with any user-specified fields
-    const fields = _.assign({}, baseFields, extraFields)
+    // skip any rows which already contain the cell 'ge:status=200'
+    // unless the 'force' option is enabled, which overrides this.
+    if (!options.force && _.get(row, 'ge:status') === '200') {
+      return next(null, row)
+    }
+
+    // add fields to store the HTTP status and any API errors
+    _.set(row, 'ge:status', '200')
+    _.set(row, 'ge:errors', '')
 
     // ensure every row contains all columns (even if they are empty)
-    _.assign(row, _.zipObject(_.keys(fields)))
+    _.defaults(row, _.zipObject(_.keys(fields)))
 
     // the http request options (params, headers, etc)
     const req = { params: {} }
@@ -57,18 +67,16 @@ const streamFactory = (options) => {
           // copy target fields to CSV row
           _.each(fields, (jpath, column) => { row[column] = _.get(feature, jpath) })
         }
-
-        // add a delay to avoid '429 Too Many Requests' rate-limit errors
-        _.delay(next, 1000, null, row)
       })
       .catch(error => {
-        // display the HTTP response where available
-        if (_.has(error, 'response.data')) {
-          console.error(error.response.data)
-          process.exit(1)
-        }
-        // else the verbose error
-        next(error)
+        // record HTTP status and any API errors
+        _.set(row, 'ge:status', _.get(error, 'response.status', '???'))
+        _.set(row, 'ge:errors', _.get(error, 'response.data.geocoding.errors', []).join(' | '))
+        console.error(_.get(row, 'ge:status'), _.get(row, 'ge:errors'))
+      })
+      .finally(() => {
+        // add a delay to avoid '429 Too Many Requests' rate-limit errors
+        _.delay(next, 1000, null, row)
       })
   })
 
