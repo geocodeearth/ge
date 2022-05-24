@@ -51,6 +51,12 @@ module.exports = {
       default: true,
       describe: 'Maximum concurrency will be applied based on your plan limits.'
     })
+    yargs.option('force', {
+      alias: 'f',
+      type: 'boolean',
+      default: false,
+      describe: 'Force previously geocoded rows to be refreshed.'
+    })
   },
   handler: (argv) => {
     fs.createReadStream(argv.file)
