@@ -85,7 +85,7 @@ ge batch csv --verbose
 
 ##### Parameter templating
 
-The basic usage is `ge batch csv <file>`, but this alone will not yeild results.
+The basic usage is `ge batch csv <file>`, but this alone will not yield results.
 You'll first need to define a mapping from the field names in your CSV to HTTP request parameters which will be sent to Geocode Earth.
 
 This can be achieved using a pair of flags, `-p` to name the parameter and `-t` to define a template for the parameter value.
