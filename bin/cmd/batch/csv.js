@@ -67,7 +67,8 @@ module.exports = {
         endpoint: argv.endpoint,
         concurrency: argv.concurrency,
         discovery: argv.discovery,
-        verbose: argv.verbose
+        verbose: argv.verbose,
+        force: argv.force
       }))
       .pipe(stream.csv.stringifier())
       .pipe(process.stdout)
