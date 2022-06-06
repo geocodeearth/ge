@@ -25,9 +25,12 @@ const streamFactory = (options) => {
   })
 
   const stream = parallel.obj(streamOptions, (row, enc, next) => {
+    stream.stats.seen++
+
     // skip any rows which already contain the cell 'ge:status=200'
     // unless the 'force' option is enabled, which overrides this.
     if (!options.force && _.get(row, 'ge:status') === '200') {
+      stream.stats.skipped++
       return next(null, row)
     }
 
@@ -58,6 +61,8 @@ const streamFactory = (options) => {
     http
       .get(options.endpoint, req)
       .then(res => {
+        stream.stats.success++
+
         // auto-discover plan limits and raise concurrency accordingly
         if (options.discovery) { discovery(res, stream) }
 
@@ -69,16 +74,25 @@ const streamFactory = (options) => {
         }
       })
       .catch(error => {
+        stream.stats.failure++
+
         // record HTTP status and any API errors
         _.set(row, 'ge:status', _.get(error, 'response.status', '???'))
         _.set(row, 'ge:errors', _.get(error, 'response.data.geocoding.errors', []).join(' | '))
-        console.error(_.get(row, 'ge:status'), _.get(row, 'ge:errors'))
+
+        // print errors to stderr in verbose mode
+        if (options.verbose) {
+          console.error(_.get(row, 'ge:status'), _.get(row, 'ge:errors'))
+        }
       })
       .finally(() => {
         // add a delay to avoid '429 Too Many Requests' rate-limit errors
         _.delay(next, 1000, null, row)
       })
   })
+
+  // record summary statistics
+  stream.stats = { seen: 0, skipped: 0, success: 0, failure: 0 }
 
   return stream
 }

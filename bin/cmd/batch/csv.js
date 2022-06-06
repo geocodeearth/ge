@@ -1,5 +1,6 @@
 const _ = require('lodash')
 const fs = require('fs')
+const colors = require('colors/safe')
 const stream = {
   csv: require('../../../stream/csv'),
   batch: require('../../../stream/batch')
@@ -57,6 +58,11 @@ module.exports = {
       default: false,
       describe: 'Force previously geocoded rows to be refreshed.'
     })
+    yargs.option('summary', {
+      type: 'boolean',
+      default: true,
+      describe: 'Print summary statistics.'
+    })
   },
   handler: (argv) => {
     fs.createReadStream(argv.file)
@@ -69,6 +75,9 @@ module.exports = {
         discovery: argv.discovery,
         verbose: argv.verbose,
         force: argv.force
+      }).on('finish', function () {
+        // print summary statistics
+        if (argv.summary) { summary(this.stats) }
       }))
       .pipe(stream.csv.stringifier())
       .pipe(process.stdout)
@@ -115,4 +124,24 @@ function generateFields (argv) {
   }
 
   return _.zipObject(c, s)
+}
+
+// print summary statistics
+function summary (stats) {
+  console.error(colors.blue(_.repeat('▄', 70)))
+  console.error(colors.bgBlue.bold(_.padEnd(' batch summary', 70)))
+  console.error(colors.blue(_.repeat('▀', 70)))
+  _.forEach({
+    seen: colors.gray.italic('total CSV rows processed'),
+    skipped: colors.gray.italic('skipped rows (previously geocoded)'),
+    success: colors.gray.italic('successful API requests sent'),
+    failure: colors.gray.italic('API requests which produced an error')
+  }, (v, label) => {
+    console.error(
+      colors.yellow(_.padEnd(` ${label}`, 20)),
+      colors.cyan.bold(_.padEnd(` ${stats[label]}`, 10)),
+      v
+    )
+  })
+  console.error()
 }
