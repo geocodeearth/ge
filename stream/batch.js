@@ -47,9 +47,10 @@ const streamFactory = (options) => {
     // call each template function to populate request object
     _.each(options.templates, (fn) => fn(req, row))
 
-    // skip rows which produces no query params
+    // skip rows which produce no query params
     // https://github.com/axios/axios#request-config
     if (_.isEmpty(req.params)) {
+      stream.stats.invalid++
       console.error('skipping request, no parameters')
       return next(null, row)
     }
@@ -61,17 +62,19 @@ const streamFactory = (options) => {
     http
       .get(options.endpoint, req)
       .then(res => {
-        stream.stats.success++
-
         // auto-discover plan limits and raise concurrency accordingly
         if (options.discovery) { discovery(res, stream) }
 
         // use the first feature returned
         const feature = _.get(res, 'data.features[0]')
-        if (feature) {
-          // copy target fields to CSV row
-          _.each(fields, (jpath, column) => { row[column] = _.get(feature, jpath) })
+        if (!feature) {
+          stream.stats.notfound++
+          return
         }
+
+        // copy target fields to CSV row
+        stream.stats.success++
+        _.each(fields, (jpath, column) => { row[column] = _.get(feature, jpath) })
       })
       .catch(error => {
         stream.stats.failure++
@@ -92,7 +95,7 @@ const streamFactory = (options) => {
   })
 
   // record summary statistics
-  stream.stats = { seen: 0, skipped: 0, success: 0, failure: 0 }
+  stream.stats = { seen: 0, skipped: 0, success: 0, failure: 0, invalid: 0, notfound: 0 }
 
   return stream
 }
