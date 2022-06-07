@@ -75,7 +75,7 @@ module.exports = {
         discovery: argv.discovery,
         verbose: argv.verbose,
         force: argv.force
-      }).on('finish', function () {
+      }).on('end', function () {
         // print summary statistics
         if (argv.summary) { summary(this.stats) }
       }))
@@ -132,15 +132,21 @@ function summary (stats) {
   console.error(colors.bgBlue.bold(_.padEnd(' batch summary', 70)))
   console.error(colors.blue(_.repeat('▀', 70)))
   _.forEach({
-    seen: colors.gray.italic('total CSV rows processed'),
-    skipped: colors.gray.italic('skipped rows (previously geocoded)'),
-    success: colors.gray.italic('successful API requests sent'),
-    failure: colors.gray.italic('API requests which produced an error')
-  }, (v, label) => {
+    seen: colors.reset.gray.italic('total CSV rows processed'),
+    success: colors.reset.gray.italic('successful API requests sent'),
+    notfound: colors.reset.gray.italic('API request which returned 0 features'),
+    failure: colors.reset.gray.italic('API requests which produced an error'),
+    skipped: colors.reset.gray.italic('skipped rows (previously geocoded)'),
+    invalid: colors.reset.gray.italic('CSV rows which produced 0 query params')
+  }, (tip, label) => {
     console.error(
-      colors.yellow(_.padEnd(` ${label}`, 20)),
-      colors.cyan.bold(_.padEnd(` ${stats[label]}`, 10)),
-      v
+      colors[(stats[label] ? 'bold' : 'dim')](
+        '',
+        colors.yellow(_.padEnd(label, 12)),
+        colors.cyan(_.padStart(stats[label], 8)),
+        _.repeat(' ', 7), tip,
+        ''
+      )
     )
   })
   console.error()
