@@ -14,6 +14,7 @@ const streamFactory = (options) => {
 
   // optionally repaint metrics after each log line
   function log () {
+    process.stderr.clearScreenDown()
     console.error.apply(null, arguments)
     if (options.summary && options.tick) { options.metrics.overprint() }
   }
