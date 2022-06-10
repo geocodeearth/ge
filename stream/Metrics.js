@@ -31,7 +31,7 @@ class Metrics {
     _.forEach({
       seen: colors.reset.gray.italic('total CSV rows processed'),
       success: colors.reset.gray.italic('successful API requests sent'),
-      notfound: colors.reset.gray.italic('API request which returned 0 features'),
+      notfound: colors.reset.gray.italic('API requests which returned 0 features'),
       failure: colors.reset.gray.italic('API requests which produced an error'),
       skipped: colors.reset.gray.italic('skipped rows (previously geocoded)'),
       invalid: colors.reset.gray.italic('CSV rows which produced 0 query params')
