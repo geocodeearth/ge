@@ -93,7 +93,7 @@ const streamFactory = (options) => {
 
         // print errors to stderr in verbose mode
         if (options.verbose) {
-          log(_.get(row, 'ge:status'), _.get(row, 'ge:errors'))
+          log(_.get(row, 'ge:status'), _.get(row, 'ge:errors'), _.get(error, 'message'))
         }
       })
       .finally(() => {
