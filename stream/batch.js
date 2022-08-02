@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const parallel = require('through2-parallel')
 const baseFields = require('./csv_fields')
+const statusFields = ['ge:status', 'ge:errors']
 const client = require('../src/client')
 
 // Perform geocoding requests, map response JSON to CSV
@@ -34,6 +35,9 @@ const streamFactory = (options) => {
   const stream = parallel.obj(streamOptions, (row, enc, next) => {
     options.metrics.inc('seen', 1)
 
+    // ensure every row contains all columns (even if they are empty)
+    _.defaults(row, _.zipObject(statusFields.concat(_.keys(fields))))
+
     // skip any rows which already contain the cell 'ge:status=200'
     // unless the 'force' option is enabled, which overrides this.
     if (!options.force && _.get(row, 'ge:status') === '200') {
@@ -41,12 +45,9 @@ const streamFactory = (options) => {
       return next(null, row)
     }
 
-    // add fields to store the HTTP status and any API errors
+    // reset fields which store the HTTP status and any API errors
     _.set(row, 'ge:status', '200')
     _.set(row, 'ge:errors', '')
-
-    // ensure every row contains all columns (even if they are empty)
-    _.defaults(row, _.zipObject(_.keys(fields)))
 
     // the http request options (params, headers, etc)
     const req = { params: {} }
@@ -92,7 +93,7 @@ const streamFactory = (options) => {
 
         // print errors to stderr in verbose mode
         if (options.verbose) {
-          log(_.get(row, 'ge:status'), _.get(row, 'ge:errors'))
+          log(_.get(row, 'ge:status'), _.get(row, 'ge:errors'), _.get(error, 'message'))
         }
       })
       .finally(() => {
