@@ -63,6 +63,11 @@ const streamFactory = (options) => {
       return next(null, row)
     }
 
+    // always use size=1 for performance, unless overidden
+    if (!req.params.size) {
+      req.params.size = '1'
+    }
+
     // verbose logging
     if (options.verbose) { log(options.endpoint, req) }
 
